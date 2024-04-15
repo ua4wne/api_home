@@ -6,7 +6,18 @@ from typing_extensions import Annotated
 from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+
+from database import create_tables
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_tables()
+    yield
+    # Clean up the ML models and release the resources
+
+app = FastAPI(lifespan=lifespan)
 
 class STaskAdd(BaseModel):
     name: str
